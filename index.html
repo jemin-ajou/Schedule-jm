@@ -736,6 +736,15 @@
                 }));
             };
 
+            const startEdit = (t) => {
+                setEditingId(t.id);
+                setEditValue(t.text);
+                setEditPriority(t.priority);
+                setEditType(t.type);
+                setEditStartDate(t.date || "");
+                setEditDeadline(t.deadline || "");
+            };
+
             const saveEdit = (id) => {
                 const tag = (editValue.match(/#(\S+)/) || [])[1] || '일상';
                 setTodos(prev => prev.map(t => t.id === id ? {
