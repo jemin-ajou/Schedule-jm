@@ -211,20 +211,22 @@
         }
 
         @media (max-width: 1200px) {
-            .container { grid-template-columns: 1.2fr 1fr; height: auto; overflow-y: visible; overflow-x: hidden; }
-            .col-insight { grid-column: span 2; min-height: 400px; }
+            .container { grid-template-columns: 1fr; height: auto; overflow-y: visible; overflow-x: hidden; padding: 15px; }
+            .col-insight { grid-column: span 1; }
+            .glass-panel { height: auto; min-height: 400px; }
+            .header { justify-content: center; text-align: center; }
+            .header > div { justify-content: center; width: 100%; }
         }
 
         @media (max-width: 768px) {
             body { overflow-y: auto; height: auto; }
-            .container { grid-template-columns: 1fr; gap: 10px; padding: 10px; height: auto; overflow: visible; }
-            .col-insight { grid-column: span 1; }
-            .glass-panel { border-radius: 24px; min-height: 450px; height: auto; }
+            .container { gap: 10px; padding: 10px; }
+            .glass-panel { border-radius: 24px; min-height: 400px; }
             .modal-body { width: 95% !important; padding: 20px !important; border-radius: 24px; }
             .stat-box { grid-template-columns: 1fr !important; gap: 10px; }
-            .header { height: auto; padding: 15px; flex-direction: column; align-items: center; gap: 10px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-            .header > div { width: 100%; justify-content: center; flex-wrap: wrap; gap: 8px; }
-            .title { font-size: 1.1rem; justify-content: center; }
+            .header { padding: 15px; gap: 10px; }
+            .header > div { gap: 8px; }
+            .title { font-size: 1.1rem; }
             .cal-nav { margin: 10px 15px; }
             .cal-grid { padding: 0 10px 15px; gap: 4px; }
             .day-cell { min-height: 65px; padding: 6px; border-radius: 10px; }
@@ -232,17 +234,17 @@
             .input-box { margin: 0 10px 10px; padding: 10px; }
             .list-container { padding: 0 10px 10px; }
             .actions { opacity: 1 !important; transform: none !important; position: relative; }
-            .task-card { padding: 12px; flex-wrap: wrap; gap: 10px; }
+            .task-card { padding: 12px; gap: 10px; }
             .task-body { margin: 0; order: 1; flex: 1; min-width: 0; }
             .check-circle { order: 0; }
             .actions { order: 2; width: 100%; justify-content: flex-end; margin-top: 5px; border-top: 1px solid var(--glass-border); padding-top: 10px; margin-left: 0; }
             .shortcut-guide { display: none !important; }
             .big-data-btn { padding: 8px 12px; font-size: 0.75rem; }
-            .progress-widget { width: 48px; height: 48px; }
-            .progress-svg { width: 48px; height: 48px; }
+            .progress-widget { width: 44px; height: 44px; }
+            .progress-svg { width: 44px; height: 44px; }
             .progress-text { font-size: 0.65rem; }
             .todo-top-block .header { align-items: center; text-align: center; }
-            .tabs { margin: 0 15px 10px; }
+            .tabs { margin: 0 10px 10px; }
         }
 
         @media (max-width: 480px) {
@@ -251,10 +253,10 @@
             .flex-row { flex-direction: column; gap: 10px; }
             .s-group { width: 100% !important; }
             .stat-num { font-size: 1.8rem; }
-            .big-data-btn span { display: none; } /* Hide text on very small screens if needed, but let's try keeping it for now or just adjust padding */
-            .header > div:last-child { justify-content: space-evenly; }
-            .big-data-btn { flex: 1; font-size: 0.7rem; padding: 6px 8px; justify-content: center; }
+            .header > div:last-child { justify-content: center; }
+            .big-data-btn { flex: 1; font-size: 0.7rem; padding: 6px 8px; justify-content: center; min-width: 80px; }
             .nav-text { font-size: 0.9rem; }
+            .header > div:first-child { flex-direction: row; align-items: center; }
         }
 
         /* Hover Media Query - Only apply hover hide for devices that support hover */
@@ -387,9 +389,9 @@
             min-height: 0;
         }
 
-        .header { height: 110px; padding: 0 24px; flex-shrink: 0; border-bottom: 1px solid var(--glass-border); background: linear-gradient(to bottom, rgba(255,255,255,0.02), transparent); display: flex; align-items: center; }
-        .title { font-family: var(--font-accent); font-size: clamp(1.2rem, 4vw, 1.5rem); font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 12px; letter-spacing: -0.01em; }
-        .subtitle { font-size: 0.65rem; color: var(--text-dim); margin-top: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; }
+        .header { min-height: 110px; height: auto; padding: 15px 24px; flex-shrink: 0; border-bottom: 1px solid var(--glass-border); background: linear-gradient(to bottom, rgba(255,255,255,0.02), transparent); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
+        .title { font-family: var(--font-accent); font-size: clamp(1.1rem, 3vw, 1.5rem); font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 12px; letter-spacing: -0.01em; white-space: nowrap; flex-shrink: 0; }
+        .subtitle { font-size: 0.65rem; color: var(--text-dim); margin-top: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; white-space: nowrap; }
 
         /* Badges & Micro-UI */
         .badge { padding: 4px 12px; border-radius: 10px; font-size: 0.65rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; white-space: nowrap; }
@@ -1186,12 +1188,12 @@
                             </div>
                         </div>
                         <div className="todo-mid-block" style={{padding: '20px 0', background: 'rgba(255,255,255,0.015)'}}>
-                            <div className="search-area" style={{marginBottom: 15, display:'flex', gap:10, padding:'0 24px', alignItems:'stretch'}}>
-                                <div className="input-inner" style={{flex:0.7, marginBottom:0, background:'rgba(255,255,255,0.05)', height:48}}>
+                            <div className="search-area" style={{marginBottom: 15, display:'flex', flexWrap:'wrap', gap:10, padding:'0 24px', alignItems:'stretch'}}>
+                                <div className="input-inner" style={{flex:'1 1 200px', marginBottom:0, background:'rgba(255,255,255,0.05)', height:48}}>
                                     <i data-lucide="search" style={{width:16, marginLeft:12, color:'var(--text-dim)', flexShrink:0}}></i>
-                                    <input ref={searchInputRef} className="search-input" style={{background:'none', border:'none', paddingLeft:10, height:'100%', flex:1}} placeholder="월간 일정 검색 (할 일/태그)..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                                    <input ref={searchInputRef} className="search-input" style={{background:'none', border:'none', paddingLeft:10, height:'100%', flex:1, minWidth:0}} placeholder="월간 일정 검색 (할 일/태그)..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
                                 </div>
-                                <select className="choice" style={{flex:0.3, background:'rgba(255,255,255,0.05)', borderRadius:16, border:'1px solid var(--glass-border)', color:'white', height:48}} value={filterPriority} onChange={e => setFilterPriority(e.target.value)}>
+                                <select className="choice" style={{flex:'1 1 100px', background:'rgba(255,255,255,0.05)', borderRadius:16, border:'1px solid var(--glass-border)', color:'white', height:48, minWidth:0}} value={filterPriority} onChange={e => setFilterPriority(e.target.value)}>
                                     <option value="all">전체 우선순위</option><option value="high">높음</option><option value="medium">중간</option><option value="low">낮음</option>
                                 </select>
                             </div>
