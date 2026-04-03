@@ -100,6 +100,23 @@
             --primary-glow: rgba(254, 205, 211, 0.4);
             --glass-border: rgba(255, 255, 255, 0.15);
         }
+        body.jarvis-mode {
+            --primary: #00f2ff;
+            --primary-glow: rgba(0, 242, 255, 0.5);
+            --bg: #030712;
+            --card-bg: rgba(7, 16, 33, 0.6);
+            --text: #ffffff;
+            --text-dim: #94a3b8;
+            --accent: #10b981;
+            --glass-border: rgba(0, 242, 255, 0.3);
+            --body-bg: url('tech_bg.png');
+        }
+        body.jarvis-mode .glass-panel {
+            backdrop-filter: blur(25px) saturate(200%);
+            -webkit-backdrop-filter: blur(25px) saturate(200%);
+            box-shadow: 0 20px 50px rgba(0, 242, 255, 0.15), inset 0 0 30px rgba(0, 242, 255, 0.05);
+            border-color: rgba(0, 242, 255, 0.25);
+        }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-main); }
         html, body {
@@ -116,6 +133,20 @@
             display: flex;
             justify-content: center;
             align-items: center;
+        }
+
+        body.jarvis-mode {
+            background: var(--body-bg) no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        body.jarvis-mode::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent 0%, rgba(3, 7, 18, 0.4) 100%);
+            pointer-events: none;
+            z-index: 1;
         }
 
         /* Custom Scrollbar */
@@ -193,14 +224,14 @@
 
         .glass-panel {
             background: var(--card-bg);
-            backdrop-filter: blur(24px) saturate(160%);
-            -webkit-backdrop-filter: blur(24px) saturate(160%);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
             border: 1px solid var(--glass-border);
             border-radius: 32px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 242, 255, 0.05);
             transition: var(--transition);
         }
         
@@ -528,6 +559,46 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
         ::-webkit-scrollbar-track { background: transparent; }
+
+        /* Highlight & Calendar Labels */
+        .task-card.highlighted {
+            animation: highlight-glow 2s ease-in-out;
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 30px var(--primary-glow) !important;
+            transform: scale(1.02);
+            z-index: 100;
+        }
+        @keyframes highlight-glow {
+            0%, 100% { border-color: var(--glass-border); transform: scale(1); }
+            50% { border-color: var(--primary); transform: scale(1.02); }
+        }
+        .day-task-label {
+            font-size: 0.55rem;
+            padding: 2px 5px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.08);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 2.5px;
+            max-width: 100%;
+            font-weight: 700;
+            line-height: 1.2;
+            cursor: pointer;
+            transition: 0.2s;
+            border-left: 2px solid transparent;
+            z-index: 2;
+        }
+        .day-task-label:hover { background: rgba(255,255,255,0.15); transform: translateX(2px); }
+        .day-task-label.high { border-left-color: var(--danger); color: #fda4af; }
+        .day-task-label.medium { border-left-color: var(--warning); color: #fde68a; }
+        .day-task-label.low { border-left-color: var(--accent); color: #a7f3d0; }
+        .day-task-label.done { opacity: 0.4; text-decoration: line-through; }
+        
+        .subtask-item { position: relative; }
+        .subtask-item:hover .sub-edit-btn { opacity: 1; }
+        .sub-edit-btn { opacity: 0; padding: 2px; border-radius: 4px; background: rgba(255,255,255,0.05); color: var(--text-dim); transition: 0.2s; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; }
+        .sub-edit-btn:hover { color: var(--primary); background: rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
@@ -566,16 +637,46 @@
             return <span className={`countdown ${left==='마감됨'?'over':''}`}><i data-lucide="timer" style={{width:12}}></i> {left}</span>;
         };
 
-        const SubTaskList = ({ todoId, subtasks, onToggle, onAdd }) => {
+        const SubTaskList = ({ todoId, subtasks, onToggle, onAdd, onEdit }) => {
             const [newSub, setNewSub] = useState("");
+            const [editingId, setEditingId] = useState(null);
+            const [editValue, setEditValue] = useState("");
+
+            const startEdit = (s) => {
+                setEditingId(s.id);
+                setEditValue(s.text);
+            };
+
+            const saveEdit = () => {
+                if (editValue.trim()) {
+                    onEdit(todoId, editingId, editValue.trim());
+                }
+                setEditingId(null);
+            };
+
             return (
                 <div className="subtasks-list">
                     {subtasks.map(s => (
-                        <div key={s.id} className="subtask-item">
+                        <div key={s.id} className="subtask-item" style={{display:'flex', alignItems:'center', gap:8}}>
                             <div className={`subtask-check ${s.completed?'done':''}`} onClick={() => onToggle(todoId, s.id)}>
-                                {s.completed && <span key="sub-check"><i data-lucide="check" style={{width:12, color:'white'}}></i></span>}
+                                {s.completed && <i data-lucide="check" style={{width:12, color:'white'}}></i>}
                             </div>
-                            <span className={`subtask-text ${s.completed?'done':''}`}>{s.text}</span>
+                            {editingId === s.id ? (
+                                <input 
+                                    className="sub-input" 
+                                    style={{fontSize:'0.8rem', borderBottom:'1px solid var(--primary)', padding:'2px 0'}} 
+                                    value={editValue} 
+                                    onChange={e => setEditValue(e.target.value)} 
+                                    onBlur={saveEdit} 
+                                    onKeyPress={e => e.key==='Enter' && saveEdit()} 
+                                    autoFocus 
+                                />
+                            ) : (
+                                <>
+                                    <span className={`subtask-text ${s.completed?'done':''}`} onClick={() => startEdit(s)} style={{cursor:'pointer', flex:1}}>{s.text}</span>
+                                    <button className="sub-edit-btn" onClick={() => startEdit(s)} title="수정"><i data-lucide="edit-3" style={{width:10, height:10}}></i></button>
+                                </>
+                            )}
                         </div>
                     ))}
                     <div className="sub-input-row">
@@ -654,6 +755,7 @@
             const [copiedTodo, setCopiedTodo] = useState(null);
             const [hoveredId, setHoveredId] = useState(null);
             const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+            const [highlightedTaskId, setHighlightedTaskId] = useState(null);
 
             const mainInputRef = useRef(null);
             const searchInputRef = useRef(null);
@@ -765,6 +867,29 @@
                 setTodos(prev => prev.map(t => t.id === tid ? {
                     ...t, subtasks: t.subtasks.map(s => s.id === sid ? { ...s, completed: !s.completed } : s)
                 } : t));
+            };
+
+            const editSubTask = (tid, sid, txt) => {
+                setTodos(prev => prev.map(t => t.id === tid ? {
+                    ...t, subtasks: t.subtasks.map(s => s.id === sid ? { ...s, text: txt } : s)
+                } : t));
+            };
+
+            const handleInsightClick = (t) => {
+                const isRoutine = ['keep', 'weekly', 'monthly'].includes(t.type);
+                const isDone = isRoutine ? t.completedDates?.includes(selStr) : t.completed;
+                
+                setActiveTab(isDone ? 'done' : 'today');
+                setHighlightedTaskId(t.id);
+                
+                setTimeout(() => {
+                    const el = document.getElementById(`task-card-${t.id}`);
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 200);
+
+                setTimeout(() => setHighlightedTaskId(null), 3000);
             };
 
             const deleteTodo = (id) => setTodos(prev => prev.filter(t => t.id !== id));
@@ -890,7 +1015,7 @@
                     if (k === 's') { e.preventDefault(); searchInputRef.current?.focus(); }
                     if (k === 't') { 
                         e.preventDefault(); 
-                        const ts = ['dark', 'light', 'midnight', 'forest', 'sunset', 'ocean', 'pink'];
+                        const ts = ['dark', 'light', 'midnight', 'forest', 'sunset', 'ocean', 'pink', 'jarvis'];
                         setTheme(p => ts[(ts.indexOf(p) + 1) % ts.length]);
                     }
                     if (k === 'h' || e.key === 'F1') { e.preventDefault(); setShowManual(p => !p); }
@@ -918,7 +1043,7 @@
             }, [editStartDate, editDeadline, editType]);
 
             useEffect(() => {
-                const themes = ['light-mode', 'midnight-mode', 'forest-mode', 'sunset-mode', 'ocean-mode', 'pink-mode'];
+                const themes = ['light-mode', 'midnight-mode', 'forest-mode', 'sunset-mode', 'ocean-mode', 'pink-mode', 'jarvis-mode'];
                 document.body.classList.remove(...themes);
                 if (theme !== 'dark') document.body.classList.add(`${theme}-mode`);
                 localStorage.setItem('theme', theme);
@@ -1144,7 +1269,7 @@
                             <div style={{display:'flex', gap:8, alignItems:'center'}}>
                                 <select className="choice" style={{width:100}} value={theme} onChange={e => setTheme(e.target.value)}>
                                     <option value="dark">Dark</option><option value="light">Light</option><option value="midnight">Midnight</option><option value="forest">Forest</option><option value="sunset">Sunset</option>
-                                    <option value="ocean">Ocean</option><option value="pink">Pink</option>
+                                    <option value="ocean">Ocean</option><option value="pink">Pink</option><option value="jarvis">Jarvis</option>
                                 </select>
                                 <button className="big-data-btn" onClick={() => setShowManual(true)} style={{background:'rgba(168,85,247,0.1)', color:'var(--purple)'}}><i data-lucide="book-open"></i> 매뉴얼</button>
                                 <button className="big-data-btn" onClick={() => setShowBigData(true)}><i data-lucide="activity"></i> 통계</button>
@@ -1172,10 +1297,16 @@
                                             <div key={idx} className="slot-row"></div>
                                         ))}
                                     </div>
-                                    <div className="day-dots">
-                                        {c.dots?.slice(0, 12).map(t => (
-                                            <div key={t.id} className="dot" style={{background:t.priority==='high'?'var(--danger)':t.priority==='medium'?'var(--warning)':'var(--accent)', opacity:(['keep', 'weekly', 'monthly'].includes(t.type) ? t.completedDates?.includes(c.dateStr) : t.completed) ? 0.4 : 1}} title={t.text}></div>
+                                    <div className="day-tasks-list" style={{display:'flex', flexDirection:'column', gap:1, marginTop:4, width:'100%'}}>
+                                        {c.dots?.slice(0, 4).map(t => (
+                                            <div key={t.id} 
+                                                 className={`day-task-label ${t.priority} ${(['keep', 'weekly', 'monthly'].includes(t.type) ? t.completedDates?.includes(c.dateStr) : t.completed) ? 'done' : ''}`} 
+                                                 title={t.text}
+                                                 onClick={(e) => { e.stopPropagation(); handleInsightClick(t); }}>
+                                                {t.text}
+                                            </div>
                                         ))}
+                                        {c.dots?.length > 4 && <div style={{fontSize:'0.5rem', textAlign:'center', opacity:0.5}}>+{c.dots.length-4}</div>}
                                     </div>
                                 </div>
                             ))}
@@ -1231,7 +1362,8 @@
                                 const isCopied = copiedTodo?.id === t.id;
                                 return (
                                     <div key={t.id} 
-                                         className={`task-card ${isEditing ? 'is-editing' : ''}`}
+                                         id={`task-card-${t.id}`}
+                                         className={`task-card ${isEditing ? 'is-editing' : ''} ${highlightedTaskId === t.id ? 'highlighted' : ''}`}
                                          onMouseEnter={() => setHoveredId(t.id)}
                                          onMouseLeave={() => setHoveredId(null)}
                                          style={{ outline: isCopied ? '2px solid var(--primary)' : '', outlineOffset: '2px' }}>
@@ -1296,7 +1428,7 @@
                                                         <span className="badge" style={{background:'rgba(255,255,255,0.05)', color:'var(--purple)', border:'1px solid var(--glass-border)'}}>#{t.category}</span>
                                                         {t.deadline && <Countdown target={t.deadline} />}
                                                     </div>
-                                                    <SubTaskList todoId={t.id} subtasks={t.subtasks} onToggle={toggleSub} onAdd={addSub} />
+                                                    <SubTaskList todoId={t.id} subtasks={t.subtasks} onToggle={toggleSub} onAdd={addSub} onEdit={editSubTask} />
                                                 </>
                                             )}
                                         </div>
@@ -1334,7 +1466,7 @@
                                 <div key={s.id} className="ins-section">
                                     <div className="ins-header"><i data-lucide={s.i}></i> {s.t}</div>
                                     {s.d.map(t => (
-                                        <div key={t.id} className="ins-card" style={{borderLeftColor: s.c}}>
+                                        <div key={t.id} className="ins-card" style={{borderLeftColor: s.c, cursor:'pointer'}} onClick={() => handleInsightClick(t)}>
                                             <div style={{minWidth:0}}><div className="ins-text">{t.text}</div><div className="ins-meta"><span style={{fontSize:'0.6rem', color:t.priority==='high'?'var(--danger)':t.priority==='medium'?'var(--warning)':'var(--accent)', fontWeight:800}}>{t.priority?.toUpperCase()}</span><span style={{fontSize:'0.6rem', color:'var(--purple)', fontWeight:800}}>#{t.category}</span></div></div>
                                         </div>
                                     ))}
